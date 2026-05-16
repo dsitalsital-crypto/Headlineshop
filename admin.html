@@ -354,20 +354,35 @@ function notif(msg, type='success') {
 }
 
 // ── LOGIN ────────────────────────────────────────────────────────────────────
+const SESSION_KEY = 'hl_admin_session';
+const SESSION_DURATION = 24 * 60 * 60 * 1000;
+
+function checkSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY));
+    if (s && Date.now() - s.time < SESSION_DURATION) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadAll(); startClock();
+    }
+  } catch(e) {}
+}
 function doLogin() {
   if (document.getElementById('loginPass').value === 'headline2024') {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ time: Date.now() }));
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
-    loadAll();
-    startClock();
+    loadAll(); startClock();
   } else { notif('Verkeerd wachtwoord!', 'error'); }
 }
 function doLogout() {
+  localStorage.removeItem(SESSION_KEY);
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('loginPass').value = '';
 }
 document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+checkSession();
 
 // ── CLOCK ────────────────────────────────────────────────────────────────────
 function startClock() {
